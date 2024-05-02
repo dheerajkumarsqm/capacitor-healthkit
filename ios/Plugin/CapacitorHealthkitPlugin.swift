@@ -381,6 +381,9 @@ public class CapacitorHealthkitPlugin: CAPPlugin {
                 if sampleName == "heartRate" {
                     unit = HKUnit(from: "count/min")
                     unitName = "BPM"
+                } else if sampleName == "restingHeartRate" {
+                    unit = HKUnit(from: "count/min")
+                    unitName = "BPM"
                 } else if sampleName == "weight" {
                     unit = HKUnit.gramUnit(with: .kilo)
                     unitName = "kilogram"
