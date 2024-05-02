@@ -60,6 +60,8 @@ public class CapacitorHealthkitPlugin: CAPPlugin {
             return HKQuantityType.quantityType(forIdentifier: HKQuantityTypeIdentifier.bodyMass)!
         case "heartRate":
              return HKQuantityType.quantityType(forIdentifier: HKQuantityTypeIdentifier.heartRate)!
+        case "restingHeartRate":
+             return HKQuantityType.quantityType(forIdentifier: HKQuantityTypeIdentifier.restingHeartRate)!
         default:
             return nil
         }
@@ -89,7 +91,9 @@ public class CapacitorHealthkitPlugin: CAPPlugin {
             case "weight":
                 types.insert(HKQuantityType.quantityType(forIdentifier: HKQuantityTypeIdentifier.bodyMass)!)
             case "heartRate":
-                 types.insert(HKQuantityType.quantityType(forIdentifier: HKQuantityTypeIdentifier.heartRate)!)
+                types.insert(HKQuantityType.quantityType(forIdentifier: HKQuantityTypeIdentifier.heartRate)!)
+            case "restingHeartRate":
+                types.insert(HKQuantityType.quantityType(forIdentifier: HKQuantityTypeIdentifier.restingHeartRate)!)
             default:
                 print("no match in case: " + item)
             }
