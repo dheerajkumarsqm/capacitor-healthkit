@@ -8,6 +8,7 @@ var healthStore = HKHealthStore()
  * Please read the Capacitor iOS Plugin Development Guide
  * here: https://capacitorjs.com/docs/plugins/ios
  */
+@available(iOS 16.0, *)
 @objc(CapacitorHealthkitPlugin)
 public class CapacitorHealthkitPlugin: CAPPlugin {
 
@@ -62,6 +63,14 @@ public class CapacitorHealthkitPlugin: CAPPlugin {
              return HKQuantityType.quantityType(forIdentifier: HKQuantityTypeIdentifier.heartRate)!
         case "restingHeartRate":
              return HKQuantityType.quantityType(forIdentifier: HKQuantityTypeIdentifier.restingHeartRate)!
+        case "respiratoryRate":
+             return HKQuantityType.quantityType(forIdentifier: HKQuantityTypeIdentifier.respiratoryRate)!
+        case "heartRateVariabilitySDNN": 
+            return HKQuantityType.quantityType(forIdentifier: HKQuantityTypeIdentifier.heartRateVariabilitySDNN)!
+        case "bodyTemperature": 
+            return HKQuantityType.quantityType(forIdentifier: HKQuantityTypeIdentifier.bodyTemperature)!
+        case "appleSleepingWristTemperature": 
+            return HKQuantityType.quantityType(forIdentifier: HKQuantityTypeIdentifier.appleSleepingWristTemperature)!
         default:
             return nil
         }
@@ -94,6 +103,14 @@ public class CapacitorHealthkitPlugin: CAPPlugin {
                 types.insert(HKQuantityType.quantityType(forIdentifier: HKQuantityTypeIdentifier.heartRate)!)
             case "restingHeartRate":
                 types.insert(HKQuantityType.quantityType(forIdentifier: HKQuantityTypeIdentifier.restingHeartRate)!)
+            case "respiratoryRate":
+                types.insert(HKQuantityType.quantityType(forIdentifier: HKQuantityTypeIdentifier.respiratoryRate)!)
+            case "heartRateVariabilitySDNN":
+                types.insert(HKQuantityType.quantityType(forIdentifier: HKQuantityTypeIdentifier.heartRateVariabilitySDNN)!)
+            case "bodyTemperature":
+                types.insert(HKQuantityType.quantityType(forIdentifier: HKQuantityTypeIdentifier.bodyTemperature)!)
+            case "appleSleepingWristTemperature":
+                types.insert(HKQuantityType.quantityType(forIdentifier: HKQuantityTypeIdentifier.appleSleepingWristTemperature)!)
             default:
                 print("no match in case: " + item)
             }
@@ -285,14 +302,25 @@ public class CapacitorHealthkitPlugin: CAPPlugin {
         }
         for result in results! {
             if sampleName == "sleepAnalysis" {
-                guard let sample = result as? HKCategorySample else {
+                guard let sample: HKCategorySample = result as? HKCategorySample else {
                     return nil
                 }
                 let sleepSD = sample.startDate as NSDate
                 let sleepED = sample.endDate as NSDate
                 let sleepInterval = sleepED.timeIntervalSince(sleepSD as Date)
                 let sleepHoursBetweenDates = sleepInterval / 3600
-                let sleepState = (sample.value == HKCategoryValueSleepAnalysis.inBed.rawValue) ? "InBed" : "Asleep"
+                let sleepState: String
+                if sample.value == HKCategoryValueSleepAnalysis.inBed.rawValue {
+                    sleepState = "InBed"
+                } else if sample.value == HKCategoryValueSleepAnalysis.asleep.rawValue {
+                    sleepState = "Asleep"
+                } else if sample.value == HKCategoryValueSleepAnalysis.asleepREM.rawValue {
+                    sleepState = "AsleepREM"
+                } else if sample.value == HKCategoryValueSleepAnalysis.asleepDeep.rawValue {
+                    sleepState = "AsleepDeep"
+                } else {
+                    sleepState = "AsleepUnspecified"
+                }
                 let constructedSample: [String: Any] = [
                     "uuid": sample.uuid.uuidString,
                     "timeZone": getTimeZoneString(sample: sample) as String,
@@ -300,6 +328,7 @@ public class CapacitorHealthkitPlugin: CAPPlugin {
                     "endDate": ISO8601DateFormatter().string(from: sample.endDate),
                     "duration": sleepHoursBetweenDates,
                     "sleepState": sleepState,
+                    "sleepType": sample.value,
                     "source": sample.sourceRevision.source.name,
                     "sourceBundleId": sample.sourceRevision.source.bundleIdentifier,
                     "device": getDeviceInformation(device: sample.device),
@@ -381,6 +410,18 @@ public class CapacitorHealthkitPlugin: CAPPlugin {
                 if sampleName == "heartRate" {
                     unit = HKUnit(from: "count/min")
                     unitName = "BPM"
+                } else if sampleName == "respiratoryRate" {
+                    unit = HKUnit(from: "count/min")
+                    unitName = "BPM"
+                } else if sampleName == "heartRateVariabilitySDNN" {
+                    unit = HKUnit.minute()
+                    unitName = "minute"
+                } else if sampleName == "bodyTemperature" {
+                    unit = HKUnit.degreeCelsius()
+                    unitName = "degreeCelsius"
+                } else if sampleName == "appleSleepingWristTemperature" {
+                    unit = HKUnit.degreeCelsius()
+                    unitName = "degreeCelsius"
                 } else if sampleName == "restingHeartRate" {
                     unit = HKUnit(from: "count/min")
                     unitName = "BPM"
